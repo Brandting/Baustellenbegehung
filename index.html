@@ -756,8 +756,19 @@ if('serviceWorker' in navigator){
 
 // ── Init ──
 (async function(){
-  await loadAll();
-  render();
+  try{
+    await loadAll();
+    render();
+  }catch(err){
+    console.error('Init error:', err);
+    document.getElementById('main').innerHTML =
+      `<div style="padding:40px;font-size:28px;color:#e53935;line-height:1.6">
+        ⚠️ Fehler beim Starten:<br><strong>${err.message||err}</strong><br><br>
+        <button onclick="location.reload()" style="padding:20px 40px;font-size:28px;background:#0b1320;color:#fff;border:none;border-radius:14px">
+          🔄 Neu laden
+        </button>
+      </div>`;
+  }
 })();
 </script>
 </body>
