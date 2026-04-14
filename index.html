@@ -641,10 +641,11 @@ function printBegehung(id){
   const b = state.diary.find(x=>x.id===id);
   if(!b) return;
   const erkenntnisse = b.erkenntnisse||[];
-  const esc2=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const fmtD=d=>d?new Date(d).toLocaleDateString('de-DE'):'';
-  const typColor=t=>t==='Mangel'?'#dc2626':t==='Info'?'#3b82f6':'#d97706';
-  const typBg=t=>t==='Mangel'?'#fee2e2':t==='Info'?'#dbeafe':'#fef9c3';
+  const e2=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fD=d=>d?new Date(d).toLocaleDateString('de-DE'):'';
+  const tCol=t=>t==='Mangel'?'#dc2626':t==='Info'?'#2563eb':'#d97706';
+  const tBg =t=>t==='Mangel'?'#fee2e2':t==='Info'?'#dbeafe':'#fef9c3';
+
   const SLOTS=5, FIRST=4;
   let pages=[];
   let p1=[{type:'info'}];
@@ -657,19 +658,85 @@ function printBegehung(id){
     while(pg.length<SLOTS) pg.push({type:'empty'});
     pages.push(pg);
   }
-  const slotHtml=slot=>{
-    if(slot.type==='empty') return `<div class="slot empty-slot"></div>`;
-    if(slot.type==='info') return `<div class="slot info-slot"><div class="slot-inner"><div class="info-title">Begehungsprotokoll</div><table class="info-table"><tr><td class="info-label">Datum</td><td>${fmtD(b.date)}</td></tr>${b.projektHinweis?`<tr><td class="info-label">Projekt</td><td>${esc2(b.projektHinweis)}</td></tr>`:''} ${b.workforce?`<tr><td class="info-label">Anwesende</td><td>${esc2(b.workforce)}</td></tr>`:''} ${b.grund?`<tr><td class="info-label">Grund</td><td>${esc2(b.grund)}</td></tr>`:''}<tr><td class="info-label">Erkenntnisse</td><td>${erkenntnisse.length} gesamt</td></tr></table></div></div>`;
-    const e=slot.e,nr=slot.idx+1;
-    return `<div class="slot erk-slot"><div class="erk-slot-inner"><div class="p-typ-col"><span class="p-typ-badge" style="background:${typBg(e.typ)};color:${typColor(e.typ)}">${e.typ||'—'}</span></div><div class="p-vdiv"></div><div class="p-img-col">${e.foto?`<img src="${e.foto}" class="p-img">`:'<div class="p-no-photo">Kein Foto</div>'}</div><div class="p-desc-col">${esc2(e.beschreibung||'').replace(/\n/g,'<br>')}</div><div class="p-nr-col">#${nr}</div></div></div>`;
-  };
-  const html=`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Begehung ${fmtD(b.date)}</title><style>*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}@page{size:A4 portrait;margin:10mm}body{background:#fff;color:#111}#printBar{position:fixed;bottom:0;left:0;right:0;padding:16px 24px;background:#0b1320;display:flex;gap:12px;z-index:999}#printBar button{flex:1;padding:16px;font-size:18px;font-weight:700;border:none;border-radius:10px;cursor:pointer}#printBtn{background:#3b82f6;color:#fff}#closeBtn{background:#555;color:#fff}@media print{#printBar{display:none}}.print-page{width:190mm;height:277mm;display:flex;flex-direction:column;page-break-after:always;overflow:hidden}.print-page:last-child{page-break-after:auto}.page-header-bar{display:flex;justify-content:space-between;font-size:8pt;color:#555;border-bottom:1px solid #ccc;padding-bottom:3mm;margin-bottom:3mm;flex-shrink:0}.slots-grid{flex:1;display:flex;flex-direction:column;gap:3mm;overflow:hidden}.slot{flex:1;min-height:0;border:1px solid #ddd;border-radius:4px;overflow:hidden;display:flex}.empty-slot{background:#f8f8f8;border-style:dashed}.info-slot{background:#f0f4ff;border-color:#4f46e5}.slot-inner{flex:1;display:flex;flex-direction:column;padding:3mm 4mm}.info-title{font-size:12pt;font-weight:700;color:#4f46e5;margin-bottom:3mm}.info-table{width:100%;border-collapse:collapse;font-size:9pt}.info-table td{padding:1.5mm 2mm;vertical-align:top}.info-label{color:#555;width:28mm;font-weight:600}.erk-slot-inner{flex:1;display:flex;flex-direction:row;align-items:stretch;overflow:hidden}.p-typ-col{width:14mm;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:2mm 0}.p-typ-badge{writing-mode:vertical-lr;transform:rotate(180deg);padding:2.5mm 2mm;border-radius:3px;font-size:7.5pt;font-weight:800;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap}.p-vdiv{width:.3mm;background:#ddd;flex-shrink:0;margin:3mm 0}.p-img-col{width:46mm;flex-shrink:0;background:#f5f5f5;border-right:.3mm solid #e0e0e0;margin:2mm 2mm 2mm 0;border-radius:2mm;border:.3mm solid #ddd;display:flex;align-items:center;justify-content:center;overflow:hidden}.p-img{max-width:100%;max-height:100%;object-fit:contain;display:block}.p-no-photo{font-size:7pt;color:#aaa;text-align:center;padding:2mm}.p-desc-col{flex:1;padding:3mm;font-size:8pt;line-height:1.45;color:#222;overflow:hidden;word-break:break-word;border-right:.3mm solid #eee}.p-nr-col{width:8mm;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:7.5pt;color:#bbb;font-weight:700;writing-mode:vertical-lr}</style></head><body><div id="printBar"><button id="printBtn">🖨️ Drucken</button><button id="closeBtn" onclick="window.close()">✕ Schließen</button></div>${pagesHtml}</div></div>`).join('')}<scr'+'ipt>
-  document.getElementById('printBtn').onclick = ()=>{
-    window.print();
-    window.onafterprint = ()=>window.close();
-  };
-<\/script></body></html>`;
-  const w=window.open('','_blank');
+
+  function slotHtml(slot){
+    if(slot.type==='empty') return '<div class="slot empty-slot"></div>';
+    if(slot.type==='info'){
+      return '<div class="slot info-slot"><div class="slot-inner">'
+        +'<div class="info-title">Begehungsprotokoll</div>'
+        +'<table class="info-table">'
+        +'<tr><td class="info-label">Datum</td><td>'+fD(b.date)+'</td></tr>'
+        +(b.projektHinweis?'<tr><td class="info-label">Projekt</td><td>'+e2(b.projektHinweis)+'</td></tr>':'')
+        +(b.workforce?'<tr><td class="info-label">Anwesende</td><td>'+e2(b.workforce)+'</td></tr>':'')
+        +(b.grund?'<tr><td class="info-label">Grund</td><td>'+e2(b.grund)+'</td></tr>':'')
+        +'<tr><td class="info-label">Erkenntnisse</td><td>'+erkenntnisse.length+' gesamt</td></tr>'
+        +'</table></div></div>';
+    }
+    var ev=slot.e, nr=slot.idx+1;
+    var imgHtml = ev.foto ? '<img src="'+ev.foto+'" class="p-img">' : '<div class="p-no-photo">Kein Foto</div>';
+    return '<div class="slot erk-slot"><div class="erk-slot-inner">'
+      +'<div class="p-typ-col"><span class="p-typ-badge" style="background:'+tBg(ev.typ)+';color:'+tCol(ev.typ)+'">'+e2(ev.typ||'—')+'</span></div>'
+      +'<div class="p-vdiv"></div>'
+      +'<div class="p-img-col">'+imgHtml+'</div>'
+      +'<div class="p-desc-col">'+e2(ev.beschreibung||'').replace(/\n/g,'<br>')+'</div>'
+      +'<div class="p-nr-col">#'+nr+'</div>'
+      +'</div></div>';
+  }
+
+  var pagesHtml = pages.map(function(page,pi){
+    return '<div class="print-page">'
+      +'<div class="page-header-bar">'
+      +'<span>'+e2(b.projektHinweis||'Begehung')+' \u00b7 '+fD(b.date)+'</span>'
+      +'<span>Seite '+(pi+1)+' / '+pages.length+'</span>'
+      +'</div>'
+      +'<div class="slots-grid">'+page.map(slotHtml).join('')+'</div>'
+      +'</div>';
+  }).join('');
+
+  var css = [
+    '*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}',
+    '@page{size:A4 portrait;margin:10mm}',
+    'body{background:#fff;color:#111}',
+    '#printBar{position:fixed;bottom:0;left:0;right:0;padding:16px 24px;background:#0b1320;display:flex;gap:12px;z-index:999}',
+    '#printBar button{flex:1;padding:16px;font-size:18px;font-weight:700;border:none;border-radius:10px;cursor:pointer}',
+    '#printBtn{background:#3b82f6;color:#fff}#closeBtn{background:#555;color:#fff}',
+    '@media print{#printBar{display:none}}',
+    '.print-page{width:190mm;height:277mm;display:flex;flex-direction:column;page-break-after:always;overflow:hidden}',
+    '.print-page:last-child{page-break-after:auto}',
+    '.page-header-bar{display:flex;justify-content:space-between;font-size:8pt;color:#555;border-bottom:1px solid #ccc;padding-bottom:3mm;margin-bottom:3mm;flex-shrink:0}',
+    '.slots-grid{flex:1;display:flex;flex-direction:column;gap:3mm;overflow:hidden}',
+    '.slot{flex:1;min-height:0;border:1px solid #ddd;border-radius:4px;overflow:hidden;display:flex}',
+    '.empty-slot{background:#f8f8f8;border-style:dashed}',
+    '.info-slot{background:#f0f4ff;border-color:#4f46e5}',
+    '.slot-inner{flex:1;display:flex;flex-direction:column;padding:3mm 4mm}',
+    '.info-title{font-size:12pt;font-weight:700;color:#4f46e5;margin-bottom:3mm}',
+    '.info-table{width:100%;border-collapse:collapse;font-size:9pt}',
+    '.info-table td{padding:1.5mm 2mm;vertical-align:top}',
+    '.info-label{color:#555;width:28mm;font-weight:600}',
+    '.erk-slot-inner{flex:1;display:flex;flex-direction:row;align-items:stretch;overflow:hidden}',
+    '.p-typ-col{width:14mm;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:2mm 0}',
+    '.p-typ-badge{writing-mode:vertical-lr;transform:rotate(180deg);padding:2.5mm 2mm;border-radius:3px;font-size:7.5pt;font-weight:800;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap}',
+    '.p-vdiv{width:.3mm;background:#ddd;flex-shrink:0;margin:3mm 0}',
+    '.p-img-col{width:46mm;flex-shrink:0;background:#f5f5f5;margin:2mm 2mm 2mm 0;border-radius:2mm;border:.3mm solid #ddd;display:flex;align-items:center;justify-content:center;overflow:hidden}',
+    '.p-img{max-width:100%;max-height:100%;object-fit:contain;display:block}',
+    '.p-no-photo{font-size:7pt;color:#aaa;text-align:center;padding:2mm}',
+    '.p-desc-col{flex:1;padding:3mm;font-size:8pt;line-height:1.45;color:#222;overflow:hidden;word-break:break-word;border-right:.3mm solid #eee}',
+    '.p-nr-col{width:8mm;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:7.5pt;color:#bbb;font-weight:700;writing-mode:vertical-lr}'
+  ].join('');
+
+  var html = '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">'
+    +'<title>Begehung '+fD(b.date)+'</title>'
+    +'<style>'+css+'</style>'
+    +'</head><body>'
+    +'<div id="printBar">'
+    +'<button id="printBtn">\uD83D\uDDA8\uFE0F Drucken</button>'
+    +'<button id="closeBtn" onclick="window.close()">\u2715 Schlie\u00dfen</button>'
+    +'</div>'
+    +pagesHtml
+    +'<script>document.getElementById("printBtn").onclick=function(){window.print();window.onafterprint=function(){window.close()};};<\/script>'
+    +'</body></html>';
+
+  var w = window.open('','_blank');
   w.document.write(html);
   w.document.close();
 }
@@ -756,18 +823,19 @@ if('serviceWorker' in navigator){
 
 // ── Init ──
 (async function(){
+  // Sofort rendern damit die UI sichtbar ist
+  render();
+
+  // IndexedDB im Hintergrund laden mit Timeout
   try{
-    await loadAll();
-    render();
+    const timeout = new Promise((_,rej) =>
+      setTimeout(()=>rej(new Error('IndexedDB timeout')), 3000)
+    );
+    await Promise.race([loadAll(), timeout]);
+    render(); // Nochmal rendern mit geladenen Daten
   }catch(err){
-    console.error('Init error:', err);
-    document.getElementById('main').innerHTML =
-      `<div style="padding:40px;font-size:28px;color:#e53935;line-height:1.6">
-        ⚠️ Fehler beim Starten:<br><strong>${err.message||err}</strong><br><br>
-        <button onclick="location.reload()" style="padding:20px 40px;font-size:28px;background:#0b1320;color:#fff;border:none;border-radius:14px">
-          🔄 Neu laden
-        </button>
-      </div>`;
+    console.warn('IndexedDB nicht verfügbar, starte mit leerem Zustand:', err.message);
+    // App läuft trotzdem mit leerem state weiter
   }
 })();
 </script>
